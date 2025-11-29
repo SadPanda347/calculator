@@ -1,7 +1,9 @@
+const negationSign = '-';
+
 const calculator = {
   resultText: '0',
   expressionQueue: [],
-  resultLabel: document.querySelector('.result-text'),
+  resultDisplay: document.querySelector('.result-text'),
   buttons: document.querySelector('.buttons-container'),
 
   setEventListener: function () {
@@ -18,13 +20,19 @@ const calculator = {
       calculator.allClear();
     } else if (button.classList.contains('backspace')) {
       calculator.backSpace();
+    } else if (button.classList.contains('negate')) {
+      calculator.negate();
     }
+  },
+
+  refreshDisplay: function () {
+    this.resultDisplay.value = this.resultText;
+    this.resultDisplay.focus();
   },
 
   clearEntry: function () {
     this.resultText = '0';
-    this.resultLabel.value = this.resultText;
-    this.resultLabel.focus();
+    this.refreshDisplay();
   },
 
   allClear: function () {
@@ -33,13 +41,22 @@ const calculator = {
   },
 
   backSpace: function () {
-    if (this.resultText.length > 1) {
-      this.resultText = this.resultText.slice(0, this.resultText.length - 1);
+    // Because resultText is formatted as an optional minus sign followed by n number of digits,
+    // we need check if resultText is positive or negative to accurately calculate the number of digits it contains.
+    if (this.resultText.charAt(0) === negationSign) {
+      if (this.resultText.length == 2) {
+        this.resultText = '0';
+      } else {
+        this.resultText = this.resultText.slice(0, this.resultText.length - 1);
+      }
     } else {
-      this.resultText = '0';
+      if (this.resultText.length > 1) {
+        this.resultText = this.resultText.slice(0, this.resultText.length - 1);
+      } else {
+        this.resultText = '0';
+      }
     }
-    this.resultLabel.value = this.resultText;
-    this.resultLabel.focus();
+    this.refreshDisplay();
   },
 
   appendToResult: function (digit) {
@@ -48,8 +65,18 @@ const calculator = {
     } else {
       this.resultText += digit;
     }
-    this.resultLabel.value = this.resultText;
-    this.resultLabel.focus();
+    this.refreshDisplay();
+  },
+
+  negate: function () {
+    if (this.resultText !== '0') {
+      if (this.resultText.charAt(0) === negationSign) {
+        this.resultText = this.resultText.slice(1, this.resultText.length);
+      } else {
+        this.resultText = negationSign + this.resultText;
+      }
+    }
+    this.refreshDisplay();
   }
 };
 
