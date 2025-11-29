@@ -1,7 +1,48 @@
 const negationSign = '-';
 
+const resultText = {
+  isNegative: false,
+  digits: '0',
+
+  toString: function () {
+    if (this.isNegative) {
+      return negationSign + this.digits;
+    }
+    return this.digits;
+  },
+
+  toNumber: function () {
+    return Number(this.toString());
+  },
+
+  clear: function () {
+    this.isNegative = false;
+    this.digits = '0';
+  },
+
+  isClear: function () {
+    return this.digits === '0';
+  },
+
+  digitsLength: function () {
+    return this.digits.length;
+  },
+
+  removeDigit: function () {
+    this.digits = this.digits.slice(0, this.digitsLength() - 1);
+  },
+
+  addDigit: function (digit) {
+    if (this.isClear()) {
+      this.digits = digit;
+    } else {
+      this.digits += digit;
+    }
+  }
+}
+
 const calculator = {
-  resultText: '0',
+  resultText: resultText,
   expressionQueue: [],
   resultDisplay: document.querySelector('.result-text'),
   buttons: document.querySelector('.buttons-container'),
@@ -13,7 +54,7 @@ const calculator = {
   buttonPress: function (event) {
     const button = event.target;
     if (button.classList.contains("number")) {
-      calculator.appendToResult(button.textContent);
+      calculator.selectNumber(button.textContent);
     } else if (button.classList.contains('clear-entry')) {
       calculator.clearEntry();
     } else if (button.classList.contains('all-clear')) {
@@ -26,55 +67,39 @@ const calculator = {
   },
 
   refreshDisplay: function () {
-    this.resultDisplay.value = this.resultText;
+    this.resultDisplay.value = this.resultText.toString();
     this.resultDisplay.focus();
   },
 
   clearEntry: function () {
-    this.resultText = '0';
+    this.resultText.clear();
     this.refreshDisplay();
   },
 
   allClear: function () {
-    this.clearEntry();
     this.expressionQueue = [];
+    this.clearEntry();
   },
 
   backSpace: function () {
-    // Because resultText is formatted as an optional minus sign followed by n number of digits,
-    // we need check if resultText is positive or negative to accurately calculate the number of digits it contains.
-    if (this.resultText.charAt(0) === negationSign) {
-      if (this.resultText.length == 2) {
-        this.resultText = '0';
-      } else {
-        this.resultText = this.resultText.slice(0, this.resultText.length - 1);
-      }
+    if (this.resultText.digitsLength() > 1) {
+      this.resultText.removeDigit();
     } else {
-      if (this.resultText.length > 1) {
-        this.resultText = this.resultText.slice(0, this.resultText.length - 1);
-      } else {
-        this.resultText = '0';
-      }
+      this.resultText.clear();
     }
     this.refreshDisplay();
   },
 
-  appendToResult: function (digit) {
-    if (this.resultText === '0') {
-      this.resultText = digit;
-    } else {
-      this.resultText += digit;
-    }
+  selectNumber: function (number) {
+    this.resultText.addDigit(number);
     this.refreshDisplay();
   },
 
   negate: function () {
-    if (this.resultText !== '0') {
-      if (this.resultText.charAt(0) === negationSign) {
-        this.resultText = this.resultText.slice(1, this.resultText.length);
-      } else {
-        this.resultText = negationSign + this.resultText;
-      }
+    if (this.resultText.isNegative) {
+      this.resultText.isNegative = false;
+    } else {
+      this.resultText.isNegative = true;
     }
     this.refreshDisplay();
   }
